@@ -57,7 +57,7 @@ $service = \Basecamp\BasecampClient::factory(array(
     'password' => BASECAMP_PASSWORD,
     'user_id' => BASECAMP_ID,
     'app_name' => 'slackcamp',
-    'app_contact' => 'http://jamescarlos.com'
+    'app_contact' => 'http://github.com/jamescarlos/slackcamp'
 ));
 
 // get the events
