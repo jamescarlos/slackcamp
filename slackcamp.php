@@ -65,6 +65,9 @@ $events = $service->getGlobalEvents(array(
     'since' => $since
 ));
 
+// reverse the array to send the older events first
+$events = array_reverse($events);
+
 // go through all of the events that are new since we last ran this
 foreach ($events as $event) {
     $message = $event['creator']['name'] . ' ' . strip_tags($event['action']) . ' <' . $event['html_url'] . '|' . $event['target'] . '>';
