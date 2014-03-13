@@ -15,7 +15,7 @@ slackcamp is a simple cron job written in PHP which finds new activity from [Bas
 $ crontab -e
 
 # run slackcamp, send basecamp activity to slack
-* * * * * php /slackcamp/slackcamp.php
+*/1 * * * * php /slackcamp/slackcamp.php
 ```
 
 ## Notes
