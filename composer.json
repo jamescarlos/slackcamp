@@ -1,0 +1,5 @@
+{
+    "require": {
+        "netvlies/basecamp-php": "1.0.*@dev"
+    }
+}
