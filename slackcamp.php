@@ -89,7 +89,10 @@ foreach ($events as $event) {
         $channel = $slack_channels[$event['bucket']['name']];
     }
 
-    slack_notify($message, $channel, $attachment);
+    // send the slack message
+    if ($channel) {
+        slack_notify($message, $channel, $attachment);
+    }
 }
 
 echo "\n" . 'DONE!' . "\n";
