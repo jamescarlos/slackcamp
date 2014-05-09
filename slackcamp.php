@@ -5,15 +5,15 @@ require __DIR__ . '/config.php';
 
 function slack_notify($msg, $channel, $attachment)
 {
-    $ch = curl_init();
+    $curl = curl_init();
     $url = sprintf(
         'https://%s.slack.com/services/hooks/incoming-webhook?token=%s',
         SLACK_INSTANCE,
         SLACK_API_TOKEN
     );
-    curl_setopt($ch, CURLOPT_URL, $url);
-    curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'POST');
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($curl, CURLOPT_URL, $url);
+    curl_setopt($curl, CURLOPT_CUSTOMREQUEST, 'POST');
+    curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
     $payload = array(
         'channel' => $channel,
         'username' => SLACK_BOT_NAME,
@@ -29,9 +29,9 @@ function slack_notify($msg, $channel, $attachment)
         $payload['attachments'] = array($attachment);
     }
     $data = 'payload=' . json_encode($payload);
-    curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
-    $result = curl_exec($ch);
-    curl_close($ch);
+    curl_setopt($curl, CURLOPT_POSTFIELDS, $data);
+    curl_exec($curl);
+    curl_close($curl);
     echo "\n" . 'message sent to ' . $channel;
 }
 
