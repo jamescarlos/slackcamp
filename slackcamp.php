@@ -101,6 +101,6 @@ try {
         }
     }
 } catch (Exception $except) {
-    echo $except->getMessage();
+    echo "\n" . $except->getMessage();
 }
 echo "\n" . 'DONE!' . "\n";
