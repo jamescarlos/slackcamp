@@ -22,7 +22,7 @@ This is the team you want to link with your Basecamp account
 
 ### 4. Set up webhook
 
-![Slack webhook setup](http://plopster.blob.core.windows.net/slackcamp/slack_webhook_setup.png)
+![Slack webhook setup](http://plopster.blob.core.windows.net/slackcamp/slack_webhook_setup.png?123)
 
 ### 5. Integration complete
 
