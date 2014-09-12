@@ -4,6 +4,29 @@ slackcamp is a simple cron job written in PHP which finds new activity from [Bas
 ## Requirements
 - PHP 5.3.x +
 - [Composer](http://getcomposer.org)
+- [Slack](http://slack.com) account
+- [Basecamp](http://basecamp.com) account
+
+## Configuration on Slack
+
+### 1. Choose a team you want to connect with Basecamp
+This is the team you want to link with your Basecamp account
+
+### 2. Configure Integrations
+
+![Slack integration configuration](http://plopster.blob.core.windows.net/slackcamp/slack_configure_integrations.png)
+
+### 3. Incoming Webhooks
+
+![Slack Incoming Webhooks](http://plopster.blob.core.windows.net/slackcamp/slack_webhooks.png)
+
+### 4. Set up webhook
+
+![Slack webhook setup](http://plopster.blob.core.windows.net/slackcamp/slack_webhook_setup.png)
+
+### 5. Integration complete
+
+![Slack webhook active](http://plopster.blob.core.windows.net/slackcamp/slack_integration_complete.png)
 
 ## Installation
 1. Clone the repository.
