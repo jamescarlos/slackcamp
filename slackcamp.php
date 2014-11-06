@@ -74,7 +74,7 @@ try {
     // go through all of the events that are new since we last ran this
     foreach ($events as $event) {
         $message = $event['creator']['name'] . ' ' . strip_tags($event['action']) . ' <' . $event['html_url'] . '|' . $event['target'] . '>';
-        $excerpt = isset($event['excerpt']) ? htmlspecialchars_decode($event['excerpt']) : '';
+        $excerpt = isset($event['excerpt']) ? htmlspecialchars_decode($event['excerpt'], ENT_QUOTES) : '';
         $attachment = array();
         if ($excerpt) {
             $attachment = array(
