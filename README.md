@@ -44,5 +44,7 @@ $ crontab -e
 ## Notes
 slackcamp needs to be able to write to a file named `last_run_date.txt` within it's directory. This is so that when we don't get duplicate events from Basecamp.
 
+slackcamp also relies on the accuracy of PHP's `date()` function. If the server time is inaccurate, you may receive duplicate (or missing) messages.
+
 ## Thanks
 [netvlies / basecamp-php](https://github.com/netvlies/basecamp-php) - PHP Implementation of the all new Basecamp API
