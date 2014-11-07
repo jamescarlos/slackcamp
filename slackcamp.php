@@ -38,13 +38,16 @@ function slack_notify($msg, $channel, $attachment)
 try {
     // last run file name
     $last_run_filename = dirname(__FILE__) . '/last_run_date.txt';
+    $save_last_run_date = false;
 
     // set the default last run date
-    $last_run_date = date('c');
-    $since = $last_run_date;
     if (file_exists($last_run_filename)) {
-        $since = file_get_contents($last_run_filename);
+        $last_run_date = file_get_contents($last_run_filename);
+    } else {
+        $last_run_date = date('c');
+        $save_last_run_date = true;
     }
+    $since = $last_run_date;
 
     echo "\n" . 'getting global events since ' . $since . "\n";
 
@@ -97,12 +100,16 @@ try {
 
         // update the last run date based on the latest basecamp event retrieved
         $last_run_date = $event['created_at'];
+        $save_last_run_date = true;
     }
 
     // persist the last run date
-    $last_run_fp = fopen($last_run_filename, 'w');
-    fwrite($last_run_fp, $last_run_date);
-    fclose($last_run_fp);
+    if ($save_last_run_date) {
+        $last_run_fp = fopen($last_run_filename, 'w');
+        fwrite($last_run_fp, $last_run_date);
+        fclose($last_run_fp);
+        echo "\n" . 'setting last run date to ' . $last_run_date;
+    }
 } catch (Exception $except) {
     echo "\n" . $except->getMessage();
 }
