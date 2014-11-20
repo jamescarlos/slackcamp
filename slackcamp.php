@@ -6,11 +6,7 @@ require __DIR__ . '/config.php';
 function slack_notify($msg, $channel, $attachment)
 {
     $curl = curl_init();
-    $url = sprintf(
-        'https://%s.slack.com/services/hooks/incoming-webhook?token=%s',
-        SLACK_INSTANCE,
-        SLACK_API_TOKEN
-    );
+    $url = SLACK_WEBHOOK_URL;
     curl_setopt($curl, CURLOPT_URL, $url);
     curl_setopt($curl, CURLOPT_CUSTOMREQUEST, 'POST');
     curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
