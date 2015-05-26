@@ -8,6 +8,7 @@ define('SLACK_WEBHOOK_URL', 'slack_webhook_url'); // https://hooks.slack.com/ser
 define('SLACK_BOT_NAME', 'basecamp');
 define('SLACK_BOT_ICON', ''); // full URL to bot icon
 define('SLACK_DEFAULT_CHANNEL', '#basecamp'); // the default channel that messages will be posted to
+define('LAST_RUN_FILENAME', __DIR__.'/last_run_date.txt');
 
 $slack_channels = array(
     'Basecamp Project Name' => '#slack_channel_name'

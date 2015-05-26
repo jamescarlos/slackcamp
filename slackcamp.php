@@ -33,12 +33,11 @@ function slack_notify($msg, $channel, $attachment)
 
 try {
     // last run file name
-    $last_run_filename = dirname(__FILE__) . '/last_run_date.txt';
     $save_last_run_date = false;
 
     // set the default last run date
-    if (file_exists($last_run_filename)) {
-        $last_run_date = file_get_contents($last_run_filename);
+    if (file_exists(LAST_RUN_FILENAME)) {
+        $last_run_date = file_get_contents(LAST_RUN_FILENAME);
     } else {
         $last_run_date = date('c');
         $save_last_run_date = true;
@@ -101,7 +100,7 @@ try {
 
     // persist the last run date
     if ($save_last_run_date) {
-        $last_run_fp = fopen($last_run_filename, 'w');
+        $last_run_fp = fopen(LAST_RUN_FILENAME, 'w');
         fwrite($last_run_fp, $last_run_date);
         fclose($last_run_fp);
         echo "\n" . 'setting last run date to ' . $last_run_date;
