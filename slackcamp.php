@@ -20,14 +20,84 @@ try {
     echo "\n" . 'getting global events since ' . $since . "\n";
 
     // initiate the basecamp service
-    $service = \Basecamp\BasecampClient::factory(array(
-        'auth' => 'http',
-        'username' => BASECAMP_USERNAME,
-        'password' => BASECAMP_PASSWORD,
-        'user_id' => BASECAMP_ID,
-        'app_name' => 'slackcamp',
-        'app_contact' => 'http://github.com/jamescarlos/slackcamp'
-    ));
+    if (defined('BASECAMP_OAUTH2_TOKEN_FILE')
+        and !empty(constant('BASECAMP_OAUTH2_TOKEN_FILE'))
+        and file_exists(constant('BASECAMP_OAUTH2_TOKEN_FILE'))) {
+
+        $auth_json = file_get_contents(BASECAMP_OAUTH2_TOKEN_FILE);
+        $auth = json_decode($auth_json, true);
+
+        // Check if the OAuth token will expire soon
+        if(3600 > $auth['expires_at'] - time()) {
+
+            // The OAuth token will expire within the next hour, so
+            // renew it using the "refresh token" originally offered
+
+            echo "\n" . "Updating Basecamp OAuth access token" . "\n";
+
+            $params = array(
+                'type' => 'refresh',
+                'client_id' => BASECAMP_OAUTH2_CLIENT_ID,
+                'redirect_uri' => BASECAMP_OAUTH2_REDIRECT_URI,
+                'client_secret' => BASECAMP_OAUTH2_CLIENT_SECRET,
+                'refresh_token' => $auth['refresh_token']
+            );
+
+            $ch = curl_init(BASECAMP_OAUTH2_ACCESS_URI);
+            curl_setopt($ch, CURLOPT_FOLLOWLOCATION, false);
+            curl_setopt($ch, CURLOPT_HEADER, false);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_POST, true);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, rawurldecode(http_build_query($params)));
+            $response = curl_exec( $ch );
+            curl_close($ch);
+
+            // The API should return JSON.
+            if (0 !== strpos($response, '{"'))
+                throw new Exception($response);
+
+            $res = json_decode($response, true);
+
+            // It should include a new access_token
+            if(!isset($res['access_token']))
+                throw new Exception($response);
+
+            // This new access token needs to be pasted into the existing auth data
+            $auth['expires_at'] = time() + $res['expires_in'];
+            $auth['access_token'] = $res['access_token'];
+
+            $auth_json = json_encode($auth);
+
+            // Save the renewed data out
+            if(!file_put_contents(BASECAMP_OAUTH2_TOKEN_FILE, $auth_json))
+                throw new Exception("Could not write file ".BASECAMP_OAUTH2_TOKEN_FILE.": $auth_json");
+        }
+
+        // Authenticate using OAuth
+        $service = \Basecamp\BasecampClient::factory(array(
+            'auth' => 'oauth',
+            'token' => $auth['access_token'],
+            'user_id' => BASECAMP_ID,
+            'app_name' => 'slackcamp',
+            'app_contact' => 'http://github.com/starberry/slackcamp'
+        ));
+    }
+
+    else if (defined('BASECAMP_USERNAME') and !empty(constant('BASECAMP_USERNAME'))) {
+
+        // Authenticate using standard username/password, but over HTTPS
+        $service = \Basecamp\BasecampClient::factory(array(
+            'auth' => 'http',
+            'username' => BASECAMP_USERNAME,
+            'password' => BASECAMP_PASSWORD,
+            'user_id' => BASECAMP_ID,
+            'app_name' => 'slackcamp',
+            'app_contact' => 'http://github.com/jamescarlos/slackcamp'
+        ));
+    }
+    else
+        throw new Exception("Basecamp configuration required");
+
 
     // get the events
     $events = $service->getGlobalEvents(array(
