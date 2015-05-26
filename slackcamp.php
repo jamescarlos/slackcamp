@@ -84,7 +84,16 @@ try {
 
         // see if a specific slack channel is set for notifications
         $channel = SLACK_DEFAULT_CHANNEL;
-        if (isset($slack_channels[$event['bucket']['name']])) {
+
+        // If $slack_channels is a callable, eg. a function, then call it
+        // to deduce the channel name.
+        if (is_callable($slack_channels)) {
+            $channel = call_user_func($slack_channels, $event['bucket']['name'], $event);
+        }
+
+        // Or, if it's an associative array containing an entry for the
+        // Basecamp project name, use it.
+        else if (is_array($slack_channels) and isset($slack_channels[$event['bucket']['name']])) {
             $channel = $slack_channels[$event['bucket']['name']];
         }
 
