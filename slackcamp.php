@@ -3,33 +3,6 @@
 require __DIR__ . '/vendor/autoload.php';
 require __DIR__ . '/config.php';
 
-function slack_notify($msg, $channel, $attachment)
-{
-    $curl = curl_init();
-    $url = SLACK_WEBHOOK_URL;
-    curl_setopt($curl, CURLOPT_URL, $url);
-    curl_setopt($curl, CURLOPT_CUSTOMREQUEST, 'POST');
-    curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
-    $payload = array(
-        'channel' => $channel,
-        'username' => SLACK_BOT_NAME,
-        'text' => $msg
-    );
-    $bot_icon = SLACK_BOT_ICON;
-    if (preg_match('/^:[a-z0-9_\-]+:$/i', $bot_icon)) {
-        $payload['icon_emoji'] = $bot_icon;
-    } elseif ($bot_icon) {
-        $payload['icon_url'] = $bot_icon;
-    }
-    if ($attachment) {
-        $payload['attachments'] = array($attachment);
-    }
-    $data = 'payload=' . json_encode($payload);
-    curl_setopt($curl, CURLOPT_POSTFIELDS, $data);
-    curl_exec($curl);
-    curl_close($curl);
-    echo "\n" . 'message sent to ' . $channel;
-}
 
 try {
     // last run file name
@@ -118,3 +91,40 @@ try {
     echo "\n" . $except->getMessage();
 }
 echo "\n" . 'DONE!' . "\n";
+
+exit;
+
+
+function slack_notify($msg, $channel, $attachment)
+    // Send a message to Slack
+{
+    $curl = curl_init();
+    $url = SLACK_WEBHOOK_URL;
+    curl_setopt($curl, CURLOPT_URL, $url);
+    curl_setopt($curl, CURLOPT_CUSTOMREQUEST, 'POST');
+    curl_setopt($curl, CURLOPT_FOLLOWLOCATION, false);
+    curl_setopt($curl, CURLOPT_HEADER, false);
+    curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+    $payload = array(
+        'channel' => $channel,
+        'username' => SLACK_BOT_NAME,
+        'text' => $msg
+    );
+    $bot_icon = SLACK_BOT_ICON;
+    if (preg_match('/^:[a-z0-9_\-]+:$/i', $bot_icon)) {
+        $payload['icon_emoji'] = $bot_icon;
+    } elseif ($bot_icon) {
+        $payload['icon_url'] = $bot_icon;
+    }
+    if ($attachment) {
+        $payload['attachments'] = array($attachment);
+    }
+    //    $data = 'payload=' . json_encode($payload);
+    $data = json_encode($payload);
+    print_r($data);
+    curl_setopt($curl, CURLOPT_POSTFIELDS, $data);
+    $ret = curl_exec($curl);
+    curl_close($curl);
+
+    return $ret;
+}
