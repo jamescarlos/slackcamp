@@ -109,10 +109,22 @@ try {
 
     // go through all of the events that are new since we last ran this
     foreach ($events as $event) {
+
+        // Build the Slack message, using formatting detailed here:
+        //     https://api.slack.com/docs/formatting
+
         $message = $event['creator']['name'] . ' ' . strip_tags($event['action']) . ' <' . $event['html_url'] . '|' . $event['target'] . '>';
-        $excerpt = isset($event['excerpt']) ? htmlspecialchars_decode($event['excerpt'], ENT_QUOTES) : '';
+
+
+        // If attachment is something we want, build it.
         $attachment = array();
-        if ($excerpt) {
+        if (!defined('SLACK_INCLUDE_ATTACHMENT') or constant('SLACK_INCLUDE_ATTACHMENT')) {
+
+            // Build a fallback excerpt for attachments
+            $excerpt = isset($event['excerpt']) ? htmlspecialchars_decode($event['excerpt'], ENT_QUOTES) : '';
+
+            if (!$excerpt) $excerpt = $event['action'];
+
             $attachment = array(
                 'fallback' => $excerpt,
                 'fields' => array(
@@ -124,6 +136,10 @@ try {
                 )
             );
         }
+
+
+
+        // Get the correct Slack channel to post to
 
         // see if a specific slack channel is set for notifications
         $channel = SLACK_DEFAULT_CHANNEL;
@@ -140,10 +156,23 @@ try {
             $channel = $slack_channels[$event['bucket']['name']];
         }
 
-        // send the slack message
+
+
+        // If a channel was selected, send the message.  Otherwise, ignore.
         if ($channel) {
-            slack_notify($message, $channel, $attachment);
+            // Send the slack message
+            $ret = slack_notify($message, $channel, $attachment);
+
+            if('ok' !== $ret)
+                throw new Exception("Bad response from Slack: $ret");
+
+            echo "\n" . 'message sent to ' . $channel;
         }
+        else {
+            // Don't send the message.. skip
+        }
+
+
 
         // update the last run date based on the latest basecamp event retrieved
         $last_run_date = $event['created_at'];
@@ -191,7 +220,6 @@ function slack_notify($msg, $channel, $attachment)
     }
     //    $data = 'payload=' . json_encode($payload);
     $data = json_encode($payload);
-    print_r($data);
     curl_setopt($curl, CURLOPT_POSTFIELDS, $data);
     $ret = curl_exec($curl);
     curl_close($curl);
