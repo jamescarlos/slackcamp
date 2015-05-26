@@ -2,3 +2,6 @@
 config.php
 last_run_date.txt
 vendor
+var
+custom.php
+

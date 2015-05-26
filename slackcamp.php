@@ -17,12 +17,12 @@ try {
     }
     $since = $last_run_date;
 
-    echo "\n" . 'getting global events since ' . $since . "\n";
+    print "Getting global events since $since\n";
 
     // initiate the basecamp service
     if (defined('BASECAMP_OAUTH2_TOKEN_FILE')
-        and !empty(constant('BASECAMP_OAUTH2_TOKEN_FILE'))
-        and file_exists(constant('BASECAMP_OAUTH2_TOKEN_FILE'))) {
+        and !empty(BASECAMP_OAUTH2_TOKEN_FILE)
+        and file_exists(BASECAMP_OAUTH2_TOKEN_FILE)) {
 
         $auth_json = file_get_contents(BASECAMP_OAUTH2_TOKEN_FILE);
         $auth = json_decode($auth_json, true);
@@ -33,7 +33,7 @@ try {
             // The OAuth token will expire within the next hour, so
             // renew it using the "refresh token" originally offered
 
-            echo "\n" . "Updating Basecamp OAuth access token" . "\n";
+            print "Updating Basecamp OAuth access token\n";
 
             $params = array(
                 'type' => 'refresh',
@@ -99,13 +99,31 @@ try {
         throw new Exception("Basecamp configuration required");
 
 
-    // get the events
-    $events = $service->getGlobalEvents(array(
-        'since' => $since
-    ));
+    // Get the events.  Although the cron may run every minute, we might
+    // want to configure it to STFU outside the working day, so as not to
+    // irritate Slack users on their mobiles.  In this case, we may need to
+    // load more than one page of events.
+    $events = array();
+    $page = 1;
+    do {
+        print "Getting list of Basecamp events since $since, page $page\n";
+
+        $params = array('since' => $since);
+        if($page > 1)
+            $params['page'] = $page;
+
+        $_events = $service->getGlobalEvents($params);
+        $events = array_merge($events, $_events);
+
+        $page ++;
+    } while (!empty($_events));
+
+
 
     // reverse the array to send the older events first
     $events = array_reverse($events);
+
+
 
     // go through all of the events that are new since we last ran this
     foreach ($events as $event) {
@@ -137,8 +155,6 @@ try {
             );
         }
 
-
-
         // Get the correct Slack channel to post to
 
         // see if a specific slack channel is set for notifications
@@ -147,7 +163,7 @@ try {
         // If $slack_channels is a callable, eg. a function, then call it
         // to deduce the channel name.
         if (is_callable($slack_channels)) {
-            $channel = call_user_func($slack_channels, $event['bucket']['name'], $event);
+            $channel = call_user_func($slack_channels, $event['bucket']['name'], $event, $service);
         }
 
         // Or, if it's an associative array containing an entry for the
@@ -166,13 +182,12 @@ try {
             if('ok' !== $ret)
                 throw new Exception("Bad response from Slack: $ret");
 
-            echo "\n" . 'message sent to ' . $channel;
+            print "Message sent to $channel\n";
         }
         else {
             // Don't send the message.. skip
+            print "Skipping\t".$event['created_at']."\t".$event['action']."\n";
         }
-
-
 
         // update the last run date based on the latest basecamp event retrieved
         $last_run_date = $event['created_at'];
@@ -184,12 +199,11 @@ try {
         $last_run_fp = fopen(LAST_RUN_FILENAME, 'w');
         fwrite($last_run_fp, $last_run_date);
         fclose($last_run_fp);
-        echo "\n" . 'setting last run date to ' . $last_run_date;
+        print "Setting last run date to $last_run_date\n";
     }
 } catch (Exception $except) {
-    echo "\n" . $except->getMessage();
+    print  "\n$except->getMessage()\n";
 }
-echo "\n" . 'DONE!' . "\n";
 
 exit;
 
