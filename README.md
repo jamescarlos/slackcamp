@@ -41,8 +41,14 @@ $ crontab -e
 */1 * * * * php /slackcamp/slackcamp.php
 ```
 
+### Using OAuth
+
+If OAuth is required rather than normal username/password, a Basecamp integration must be set up on [Basecamp's Developers page](http://integrate.37signals.com), and the appropriate values entered into the slackcamp configuration.  Additionally, `oauth.php` must be accessible from the configured `Redirect URI` and able to write to the location determined by `BASECAMP_OAUTH2_TOKEN_FILE`.  This file should then be secured against reading by the webserver.
+
+Unfortunately, OAuth doesn't add much in the way of security to the script, as an OAuth token issued by Basecamp has most of the same capabilities via the API as a Username/Password combination, rather than the ability to set a limited capability token (eg. read only) as you might expect.  Still, it prevents the account itself being stolen.
+
 ## Notes
-slackcamp needs to be able to write to a file named `last_run_date.txt` within it's directory. This is so that when we don't get duplicate events from Basecamp.
+slackcamp needs to be able to write to a file named `last_run_date.txt` within its directory, or another directory if configured that way. This is so that when we don't get duplicate events from Basecamp.
 
 slackcamp also relies on the accuracy of PHP's `date()` function. If the server time is inaccurate, you may receive duplicate (or missing) messages.
 

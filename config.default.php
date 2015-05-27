@@ -33,17 +33,36 @@ define('LAST_RUN_FILENAME', __DIR__.'/last_run_date.txt');
 
 if( ! @include_once(__DIR__.'/custom.php')) {
 
-    $slack_channels = function ($basecamp_project_name, $event) {
+    $slack_channels = function ($basecamp_project_name, $event, $service) {
         // Given an input Basecamp project name, this function should
         // return a Slack channel name to post to, or an empty string
         // if the event is to be ignored.
+        //
+        // The raw $event object is passed; you can use this to filter out
+        // messages, eg. by checking $event['action'] and returning ''
+        // unless the action starts with "commented on", "added",
+        // "posted", "created", etc.
+        //
+        // Also, $service -- a handle to the BasecampClient in use -- is
+        // passed to allow this function to do more investigation.  A good
+        // use of this would be to include the Slack channel hashtag in
+        // the Basecamp project's `description` field... remember to cache
+        // the API queries though!
+
+        // If the Basecamp project name itself contains a hashtag, then
+        // assume it's the Slack channel
+        if (preg_match('/(#\w+)/', $basecamp_project_name, $parts))
+            return $parts[1];
+
+        // Otherwise, use some other code to determine the Slack channel,
+        // if any.
 
         switch ($basecamp_project_name) {
         case 'Basecamp Project Name':
             return '#slack_channel_name';
 
         case 'Basecamp Project I Do Not Care About':
-            return '';
+            return ''; // An empty string means "discard the event"
 
         default:
             // If not previously matched, then default.  Alternatively, change
